@@ -1,0 +1,322 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["darwin-arm64", "windows"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Counterparty {
+  id                   String                 @id
+  title                String                 @db.VarChar(2550)
+  comment              String?                @db.VarChar(4096)
+  lawyerComment        String?
+  legalEntityId        Int
+  form                 String
+  inn                  String
+  kpp                  String
+  ogrn                 String
+  physicalAddress      String
+  legalAddress         String?
+  isPhysicalAddressEq  Boolean
+  mailAddress          String
+  isMailAddressEq      Boolean
+  phone                String
+  email                String
+  isContractor         Boolean                @default(false)
+  isAgreed             Boolean                @default(false)
+  bankAccountId        Int?
+  managerId            Int?
+  bankAccount          BankAccount?           @relation(fields: [bankAccountId], references: [id])
+  counterparty_contact Counterparty_contact[]
+  project              Project[]
+  application          Application[]
+  legalEntity          Legal_entity           @relation(fields: [legalEntityId], references: [id])
+  jobs                 Job[]
+  jobDetails           JobDetail[]
+    primaryDocuments PrimaryDocument[]
+  manager              User?                  @relation(fields: [managerId], references: [id])
+
+  @@index([id, inn])
+}
+
+model BankAccount {
+  id            Int            @id @default(autoincrement())
+  title         String
+  bik           String?
+  accountNumber String?
+  cAccount      String?
+  city          String?
+  address       String?
+  counterparty  Counterparty[]
+  legalEntity   Legal_entity[]
+
+  @@index([title])
+}
+
+model Counterparty_contact {
+  id              Int          @id @default(autoincrement())
+  title           String       @db.VarChar(255)
+  position        String
+  contact         String
+  counterparty_id String
+  counterparty    Counterparty @relation(fields: [counterparty_id], references: [id], onDelete: Cascade, map: "counterparty_contact_ibfk_2")
+
+  @@index([id])
+}
+
+model Legal_entity {
+  id                  Int               @id @default(autoincrement())
+  title               String            @db.VarChar(255)
+  form                String
+  inn                 String            @unique
+  kpp                 String
+  ogrn                String
+  tax                 Int?
+  physicalAddress     String
+  legalAddress        String?
+  isPhysicalAddressEq Boolean
+  mailAddress         String
+  isMailAddressEq     Boolean
+  phone               String
+  email               String
+  dbName              String?
+  bankAccountId       Int?
+  bankAccount         BankAccount?      @relation(fields: [bankAccountId], references: [id])
+  project             Project[]
+  application         Application[]
+  counterparty        Counterparty[]
+  primaryDocuments PrimaryDocument[]
+
+  @@index([id, title])
+}
+
+model Pay_status {
+  id          Int           @id @default(autoincrement())
+  title       String        @unique @db.VarChar(255)
+  application Application[]
+
+  @@index([title])
+}
+
+model Closed_doc_status {
+  id        Int                @id @default(autoincrement())
+  title     String             @unique @db.VarChar(255)
+  documents Project_document[]
+
+  @@index([title])
+}
+
+model Project {
+  id               Int                   @id @default(autoincrement())
+  title            String                @db.VarChar(255)
+  description      String                @db.VarChar(255)
+  sum              Float
+  payed_sum        Float                 @default(0)
+  counterparty_id  String
+  status_id        Int
+  managerId        Int
+  Legal_entity_id  Int
+  is_readed        Boolean               @default(false)
+  isCorrection     Boolean               @default(false)
+  precedent        String?               @db.VarChar(255)
+  created_at       DateTime              @default(now())
+  deadline         DateTime?             @db.Date
+  isDisabled       Boolean               @default(false)
+  isDeleted        Boolean               @default(false)
+  isArchived       Boolean               @default(false)
+  isPartner        Boolean               @default(false)
+  isDocsEDO        Boolean               @default(false)
+  manager          User                  @relation(fields: [managerId], references: [id])
+  jobs             Job[]
+  applications     ProjectApplications[]
+  counterparty     Counterparty          @relation(fields: [counterparty_id], references: [id], onDelete: Cascade, map: "project_ibfk_1")
+  Project_status   Project_status        @relation(fields: [status_id], references: [id], onDelete: Cascade, map: "project_ibfk_2")
+  Legal_entity     Legal_entity          @relation(fields: [Legal_entity_id], references: [id], onDelete: Cascade, map: "project_ibfk_3")
+  project_document Project_document[]
+  primaryDocuments PrimaryDocument[]
+  @@index([id, title])
+}
+
+model ProjectApplications {
+  id            Int         @id @default(autoincrement())
+  applicationId Int
+  projectId     Int
+  sum           Float
+  project       Project     @relation(fields: [projectId], references: [id])
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, applicationId])
+}
+
+model Application {
+  id                 Int                   @id @default(autoincrement())
+  parentId           Int?
+  document           String?
+  actDocument        String?
+  accountNumber      String?
+  title              String
+  sum                Float
+  sumWithTax         Float
+  accountDate        DateTime
+  paymentDate        DateTime?
+  isIncome           Boolean               @default(false)
+  isUrgent           Boolean               @default(false)
+  counterpartyId     String
+  moderatorId        Int
+  taxPercent         Int
+  legalEntityId      Int
+  adminStatusId      Int
+  payStatusId        Int
+  comment            String?
+  isPayed            Boolean               @default(false)
+  isPaymentRequested Boolean               @default(false)
+  positions          Position[]
+  projects           ProjectApplications[]
+
+  primaryDocument    PrimaryDocument?
+  counterparty       Counterparty          @relation(fields: [counterpartyId], references: [id])
+  payStatus          Pay_status            @relation(fields: [payStatusId], references: [id])
+  adminStatus        AdminStatus           @relation(fields: [adminStatusId], references: [id])
+  legalEntity        Legal_entity          @relation(fields: [legalEntityId], references: [id])
+  moderator          User                  @relation(fields: [moderatorId], references: [id])
+  createdAt          DateTime              @default(now())
+  
+
+  @@index([id])
+}
+
+model Project_document {
+  id         Int               @id @default(autoincrement())
+  url        String            @db.VarChar(255)
+  project_id Int
+  project    Project           @relation(fields: [project_id], references: [id], onDelete: Cascade, map: "project_document_ibfk_1")
+  status_id  Int
+  status     Closed_doc_status @relation(fields: [status_id], references: [id])
+
+  @@index([project_id], map: "document_ibfk_1")
+}
+
+model Project_status {
+  id      Int       @id @default(autoincrement())
+  title   String    @unique @db.VarChar(255)
+  project Project[]
+
+  @@index([title])
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  title String @unique
+  users User[]
+
+  @@index([title])
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  email            String            @unique(map: "email") @db.VarChar(255)
+  realEmail        String?
+  password         String            @db.VarChar(255)
+  full_name        String            @db.VarChar(255)
+  is_active        Boolean           @default(false)
+  role_id          Int
+  role             Role              @relation(fields: [role_id], references: [id])
+  token            String?
+  appsToModerate   Application[]
+  projects         Project[]
+  actions          Action[]
+  counterparties   Counterparty[]
+    primaryDocuments PrimaryDocument[]
+}
+
+model Position {
+  id            Int    @id @default(autoincrement())
+  title         String
+  qty           Int
+  unit          String
+  price         Float
+  sum           Float
+  applicationId Int
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id             Int           @id @default(autoincrement())
+  title          String
+  qty            Int
+  unit           String
+  price          Float
+  ourSum         Float
+  sum            Float
+  sumWithAk      Float
+  isAk           Boolean       @default(false)
+  taxPercent     Int           @default(0)
+  counterPartyId String?
+  projectId      Int
+  counterParty   Counterparty? @relation(fields: [counterPartyId], references: [id])
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  details        JobDetail[]
+}
+
+model JobDetail {
+  id             Int           @id @default(autoincrement())
+  title          String
+  qty            Int
+  unit           String
+  price          Float
+  jobId          Int
+  job            Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  counterpartyId String?
+  counterparty   Counterparty? @relation(fields: [counterpartyId], references: [id], onDelete: SetNull)
+}
+
+model AdminStatus {
+  id           Int           @id @default(autoincrement())
+  title        String        @unique
+  applications Application[]
+
+  @@index([title])
+}
+
+model Action {
+  id          Int      @id @default(autoincrement())
+  method      String
+  description String
+  url         String
+  statusCode  Int
+  link        String?
+  userId      Int
+  type        String?
+  user        User     @relation(fields: [userId], references: [id])
+  time        DateTime @default(now())
+}
+
+
+model PrimaryDocument {
+  id                Int      @id @default(autoincrement())
+  invoiceDate       DateTime
+  invoiceNumber     String
+  paymentDate       DateTime?
+  amount            Float
+  legalEntityId     Int
+  counterpartyId    String
+  managerId         Int
+  projectId         Int 
+  applicationId     Int? @unique
+  provisionDeadline DateTime?
+  documentLink      String?
+  status            String
+  type              String
+  isEmailed         Boolean @default(false)
+  createdAt         DateTime @default(now())
+
+  legalEntity  Legal_entity @relation(fields: [legalEntityId], references: [id])
+  counterParty Counterparty @relation(fields: [counterpartyId], references: [id])
+  manager      User         @relation(fields: [managerId], references: [id])
+  project      Project      @relation(fields: [projectId], references: [id])
+  application  Application?  @relation(fields: [applicationId], references: [id])
+}
