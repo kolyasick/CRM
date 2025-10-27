@@ -3,7 +3,9 @@ import prisma from "~/lib/prisma";
 
 export default defineEventHandler(async (event) => {
   const { id } = event.context.params as { id: string };
-  const body = await readBody<Legal_entity & { bankAccount: BankAccount }>(event);
+  const body = await readBody<Legal_entity & { bankAccount: BankAccount }>(
+    event
+  );
   const { user } = await getUserSession(event);
 
   if (!user || (user.role !== "ADMIN" && user.role !== "LAWYER")) {
@@ -14,7 +16,9 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const legalAddress = body.isPhysicalAddressEq ? body.physicalAddress : body.legalAddress;
+    const legalAddress = body.isPhysicalAddressEq
+      ? body.physicalAddress
+      : body.legalAddress;
     const mailAddress = body.isMailAddressEq ? legalAddress! : body.mailAddress;
 
     if (body.bankAccountId) {
@@ -32,7 +36,7 @@ export default defineEventHandler(async (event) => {
         },
       });
     } else {
-      if (body.bankAccount.accountNumber) {
+      if (body.bankAccount && body.bankAccount.accountNumber) {
         const b = await prisma.bankAccount.create({
           data: {
             title: body.bankAccount.title,

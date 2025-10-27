@@ -27,38 +27,38 @@ const handleApprove = async (counterparty: CounterParty) => {
     message: `Вы уверены, что хотите согласовать контрагента "${counterparty.title}"?`,
     onConfirm: async () => {
       try {
-        await fetch(`${config.public.API_URL}/${counterparty.legalEntity?.dbName}/hs/hapi/v1/counteragent`, {
-          method: "POST",
-          body: JSON.stringify({
-            Name: counterparty.title,
-            FullName: counterparty.title,
-            INN: counterparty.inn || "",
-            KPP: counterparty.kpp || "",
-            PostAddress: counterparty.mailAddress || "",
-            LegalAddress: counterparty.legalAddress || "",
-            ActualAddress: counterparty.physicalAddress || "",
-            Phone: counterparty.phone || "",
-            Email: counterparty.email || "",
-            Type: counterparty.form || "",
-            MainBankAccount: {
-              BankName: counterparty.bankAccount?.title || "",
-              BIK: counterparty.bankAccount?.bik || "",
-              CorrespondentAccount: counterparty.bankAccount?.cAccount || "",
-              AccountNumber: counterparty.bankAccount?.accountNumber || "",
-              Address: counterparty.bankAccount?.address || "",
-              City: counterparty.bankAccount?.city || "",
-              Currency: "RUB",
-              MainAccount: true,
-            },
-            ContactPersons: counterparty.counterparty_contact?.map((c) => ({
-              Name: c.title,
-              Position: c.position,
-              Phone: c.contact,
-              Email: c.contact,
-            })),
-            Note: counterparty.comment || "",
-          }),
-        });
+        // await fetch(`${config.public.API_URL}/${counterparty.legalEntity?.dbName}/hs/hapi/v1/counteragent`, {
+        //   method: "POST",
+        //   body: JSON.stringify({
+        //     Name: counterparty.title,
+        //     FullName: counterparty.title,
+        //     INN: counterparty.inn || "",
+        //     KPP: counterparty.kpp || "",
+        //     PostAddress: counterparty.mailAddress || "",
+        //     LegalAddress: counterparty.legalAddress || "",
+        //     ActualAddress: counterparty.physicalAddress || "",
+        //     Phone: counterparty.phone || "",
+        //     Email: counterparty.email || "",
+        //     Type: counterparty.form || "",
+        //     MainBankAccount: {
+        //       BankName: counterparty.bankAccount?.title || "",
+        //       BIK: counterparty.bankAccount?.bik || "",
+        //       CorrespondentAccount: counterparty.bankAccount?.cAccount || "",
+        //       AccountNumber: counterparty.bankAccount?.accountNumber || "",
+        //       Address: counterparty.bankAccount?.address || "",
+        //       City: counterparty.bankAccount?.city || "",
+        //       Currency: "RUB",
+        //       MainAccount: true,
+        //     },
+        //     ContactPersons: counterparty.counterparty_contact?.map((c) => ({
+        //       Name: c.title,
+        //       Position: c.position,
+        //       Phone: c.contact,
+        //       Email: c.contact,
+        //     })),
+        //     Note: counterparty.comment || "",
+        //   }),
+        // });
 
         const response = await $fetch<CounterParty>(`/api/counterparty/${counterparty.id}/approve`, {
           method: "PUT",

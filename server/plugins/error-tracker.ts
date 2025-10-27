@@ -2,7 +2,7 @@ import prisma from "~/lib/prisma";
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook("error", async (error, { event }) => {
-    if (!event || process.env.NODE_ENV === "development") return;
+    if (!event) return;
 
     try {
       const { user } = await getUserSession(event);
@@ -18,7 +18,9 @@ export default defineNitroPlugin((nitroApp) => {
             url: event.path || "",
             method: event.method || "",
             statusCode: event.node.res.statusCode,
-            description: `Системная ошибка: ${error.message.toLocaleLowerCase() || "неизвестная ошибка"}`,
+            description: `Системная ошибка: ${
+              error.message.toLocaleLowerCase() || "неизвестная ошибка"
+            }`,
           },
         });
       }
@@ -38,7 +40,10 @@ export default defineNitroPlugin((nitroApp) => {
             url: event.path || "",
             method: event.method || "",
             statusCode: event.node.res.statusCode,
-            description: `HTTP ошибка: ${event.node.res.statusMessage.toLocaleLowerCase() || "ошибка запроса"}`,
+            description: `HTTP ошибка: ${
+              event.node.res.statusMessage.toLocaleLowerCase() ||
+              "ошибка запроса"
+            }`,
           },
         });
       } catch (error) {

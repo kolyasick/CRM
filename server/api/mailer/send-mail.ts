@@ -6,12 +6,12 @@ export default defineEventHandler(async (event) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp.mail.ru",
+      host: "smtp.gmail.com",
       port: 465,
       secure: true,
       auth: {
-        user: "m.sergeev@lightdigital.ru",
-        pass: "jFeaZeFBfTdt33c8ccRP",
+        user: "killergems122@gmail.com",
+        pass: "kros spbj echf tmke",
       },
     });
 

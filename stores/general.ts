@@ -80,37 +80,37 @@ export const useGeneralStore = defineStore("general", () => {
             title = applicationData.title;
           }
 
-          const body = {
-            Номер: response.id,
-            НомерДоговора: applicationData.accountNumber,
-            ДатаДоговора: dateString(applicationData.accountDate),
-            Дата: dateString(new Date()),
-            Контрагент: applicationData.counterparty?.inn,
-            Договор: title,
-            Проводить: false,
-            Организация: legalEntity?.inn.toString(),
-            НДС: legalEntity?.tax,
-            Комментарий: applicationData.comment || applicationData.project?.title + ", " + applicationData.project?.manager?.full_name,
-            Товары: applicationData.positions?.map((p) => ({
-              Тип: "Услуга",
-              Наименование: p.title,
-              Количество: p.qty,
-              Единица: p.unit,
-              Содержание: "Без содержания",
-              Цена: p.price,
-            })),
-          };
-          const res = await fetch(`${config.API_URL}/${legalEntity?.dbName}/hs/hapi/v1/create-invoice`, {
-            method: "POST",
-            body: JSON.stringify(body),
-          });
-          const result = await res.json();
+          // const body = {
+          //   Номер: response.id,
+          //   НомерДоговора: applicationData.accountNumber,
+          //   ДатаДоговора: dateString(applicationData.accountDate),
+          //   Дата: dateString(new Date()),
+          //   Контрагент: applicationData.counterparty?.inn,
+          //   Договор: title,
+          //   Проводить: false,
+          //   Организация: legalEntity?.inn.toString(),
+          //   НДС: legalEntity?.tax,
+          //   Комментарий: applicationData.comment || applicationData.project?.title + ", " + applicationData.project?.manager?.full_name,
+          //   Товары: applicationData.positions?.map((p) => ({
+          //     Тип: "Услуга",
+          //     Наименование: p.title,
+          //     Количество: p.qty,
+          //     Единица: p.unit,
+          //     Содержание: "Без содержания",
+          //     Цена: p.price,
+          //   })),
+          // };
+          // const res = await fetch(`${config.API_URL}/${legalEntity?.dbName}/hs/hapi/v1/create-invoice`, {
+          //   method: "POST",
+          //   body: JSON.stringify(body),
+          // });
+          // const result = await res.json();
 
-          if (result["Ошибка"]) {
-            await $fetch(`/api/application/${response.id}`, { method: "DELETE" });
-            addNotification("Ошибка при изменении статуса: " + result["Ошибка"], "error", null);
-            return null;
-          }
+          // if (result["Ошибка"]) {
+          //   await $fetch(`/api/application/${response.id}`, { method: "DELETE" });
+          //   addNotification("Ошибка при изменении статуса: " + result["Ошибка"], "error", null);
+          //   return null;
+          // }
 
           // @ts-ignore
           await sendStatusEmail("invoice", response, response.project?.manager?.full_name);
@@ -215,38 +215,38 @@ export const useGeneralStore = defineStore("general", () => {
 
   async function createCounterParty(counterparty: CounterParty, dbName: string) {
     try {
-      await fetch(`${config.API_URL}/${dbName}/hs/hapi/v1/counteragent`, {
-        method: "POST",
-        body: JSON.stringify({
-          Name: counterparty.title,
-          FullName: counterparty.title,
-          INN: counterparty.inn || "",
-          KPP: counterparty.kpp || "",
-          PostAddress: counterparty.mailAddress || "",
-          LegalAddress: counterparty.legalAddress || "",
-          ActualAddress: counterparty.physicalAddress || "",
-          Phone: counterparty.phone || "",
-          Email: counterparty.email || "",
-          Type: counterparty.form || "",
-          MainBankAccount: {
-            BankName: counterparty.bankAccount?.title || "",
-            BIK: counterparty.bankAccount?.bik || "",
-            CorrespondentAccount: counterparty.bankAccount?.cAccount || "",
-            AccountNumber: counterparty.bankAccount?.accountNumber || "",
-            Address: counterparty.bankAccount?.address || "",
-            City: counterparty.bankAccount?.city || "",
-            Currency: "RUB",
-            MainAccount: true,
-          },
-          ContactPersons: counterparty.counterparty_contact?.map((c) => ({
-            Name: c.title,
-            Position: c.position,
-            Phone: c.contact,
-            Email: c.contact,
-          })),
-          Note: counterparty.comment || "",
-        }),
-      });
+      // await fetch(`${config.API_URL}/${dbName}/hs/hapi/v1/counteragent`, {
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     Name: counterparty.title,
+      //     FullName: counterparty.title,
+      //     INN: counterparty.inn || "",
+      //     KPP: counterparty.kpp || "",
+      //     PostAddress: counterparty.mailAddress || "",
+      //     LegalAddress: counterparty.legalAddress || "",
+      //     ActualAddress: counterparty.physicalAddress || "",
+      //     Phone: counterparty.phone || "",
+      //     Email: counterparty.email || "",
+      //     Type: counterparty.form || "",
+      //     MainBankAccount: {
+      //       BankName: counterparty.bankAccount?.title || "",
+      //       BIK: counterparty.bankAccount?.bik || "",
+      //       CorrespondentAccount: counterparty.bankAccount?.cAccount || "",
+      //       AccountNumber: counterparty.bankAccount?.accountNumber || "",
+      //       Address: counterparty.bankAccount?.address || "",
+      //       City: counterparty.bankAccount?.city || "",
+      //       Currency: "RUB",
+      //       MainAccount: true,
+      //     },
+      //     ContactPersons: counterparty.counterparty_contact?.map((c) => ({
+      //       Name: c.title,
+      //       Position: c.position,
+      //       Phone: c.contact,
+      //       Email: c.contact,
+      //     })),
+      //     Note: counterparty.comment || "",
+      //   }),
+      // });
       const { counterparty_contact, ...counterPartData } = counterparty;
       const cp = await $fetch("/api/counterparty", {
         method: "POST",
@@ -296,16 +296,16 @@ export const useGeneralStore = defineStore("general", () => {
           Комментарий: app.comment || app.project?.title + ", " + app.project?.manager?.full_name,
         };
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
-        const result = await response.json();
+        // const response = await fetch(endpoint, {
+        //   method: "POST",
+        //   body: JSON.stringify(body),
+        // });
+        // const result = await response.json();
 
-        if (result["Ошибка"]) {
-          addNotification("Ошибка при изменении статуса: " + result["Ошибка"], "error", null);
-          return;
-        }
+        // if (result["Ошибка"]) {
+        //   addNotification("Ошибка при изменении статуса: " + result["Ошибка"], "error", null);
+        //   return;
+        // }
       }
 
       const application = await $fetch<IApplication>(`/api/application/${app.id}/admin`, {
